@@ -1,0 +1,423 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="css/stylesheet.css" rel="stylesheet" type="text/css" media="all">
+  <title>The Book Of Geb</title>
+  
+  <link type="text/css" rel="stylesheet" href="css/shCore.css"></link>
+  <link type="text/css" rel="stylesheet" href="css/shThemeEclipse.css"></link>
+  <script language="javascript" src="js/shCore.js"></script>
+  <script language="javascript" src="js/shBrushGroovy.js"></script>
+  <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+  <script type="text/javascript" src="js/syntaxhighlight.js"></script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-15031038-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</head>
+
+<body>
+<div id="wrapper">
+  <h1 class="title">The Book Of Geb</h1>
+  <p class="tag">— Very Groovy browser automation… web testing, screen scraping and more —</p>
+  <div class="toc">
+      <h2>Version unspecified</h2>
+    <ul><li><span class='toc_number'>1</span><a href='all.html#introduction'>Introduction</a><ul><li><span class='toc_number'>1.1</span><a href='all.html#quick_simple_example'>Quick Simple Example</a></li><li><span class='toc_number'>1.2</span><a href='all.html#grails_taglib_example'>Grails Taglib Example</a></li></ul></li></ul></li></ul><ul><li><span class='toc_number'>2</span><a href='all.html#usage'>Usage</a><ul><li><span class='toc_number'>2.1</span><a href='all.html#syntax_tips_gsp_vs_ftl'>Syntax tips (GSP vs. FTL)</a><ul><li><span class='toc_number'>2.1.1</span><a href='all.html#maps_vs_hashes'>Maps vs. Hashes</a></li><li><span class='toc_number'>2.1.2</span><a href='all.html#tags_vs_tags'>Tags vs. Tags</a></li><li><span class='toc_number'>2.1.3</span><a href='all.html#tags_as_method_calls_vs_method_calls'>Tags as method calls vs. Method calls</a></li></ul><span class='toc_number'>2.2</span><a href='all.html#render'>Render</a></li><li><span class='toc_number'>2.3</span><a href='all.html#services'>Services</a></li></ul></li></ul></li></ul><ul><li><span class='toc_number'>3</span><a href='all.html#miscellaneous'>Miscellaneous</a><ul><li><span class='toc_number'>3.1</span><a href='all.html#configuration'>Configuration</a></li><li><span class='toc_number'>3.2</span><a href='all.html#logging'>Logging</a></li><li><span class='toc_number'>3.3</span><a href='all.html#reserved_words'>Reserved Words</a></li></ul></li></ul></li></ul><ul><li><span class='toc_number'>4</span><a href='all.html#history'>History</a></li></ul>
+  </div>
+  
+    <div class="chapter">
+      <h1><span id='introduction'>1</span> Introduction</h1>
+
+<p>With this plugin you can use the
+<a href="http://grails.org/doc/latest/guide/single.html#6.3%20Tag%20Libraries">Grails Tag Libraries</a> in
+<a href="http://freemarker.sourceforge.net/">FreeMarker</a> templates. No JSP tag libraries are involved at
+all, the plugin connects FreeMarker to Grails TagLibs system as directly as possible.</p>
+
+<h2><span id='quick_simple_example'>1.1</span> Quick Simple Example</h2>
+
+<p>Create your Grails application</p>
+
+<p>Install the plugin</p>
+
+<pre><code>grails install-plugin freemarker
+</code></pre>
+
+<p>Assuming you have a controller called FreemakerCon</p>
+
+<p>Add new actions to your <em>grails-app/controllers/test/freemaker/prj/MyUserController.groovy</em></p>
+
+<pre><code>class DemoController {
+    def index = {
+        render view: 'index.ftl', model: [name: 'Jeff Beck', instrument: 'Guitar']
+    }
+}
+</code></pre>
+
+<p>Then you could define a FreeMarker template in grails-app/views/demo/index.ftl that looks like this:</p>
+
+<pre><code>&lt;#ftl /&gt;
+&lt;html&gt;
+&lt;body&gt;
+    Name: ${name} &lt;br/&gt;
+    Instrument: ${instrument}&lt;br/&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Use your browser to navigate to <a href="">http://localhost:8080/test-freemaker-prj/myUser/login</a></p>
+
+<p>Done!</p>
+
+<blockquote>
+  <p>Note:
+  In FreeMarker templates, you can use &lt; > or [ ]. For more information, please consult <a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_alternative_syntax">Freemarker FAQ</a> about alternative syntax.</p>
+  
+  <p>Warning:
+  Be aware that FreeMarker syntax differs from GSP syntax (they are different beasts).</p>
+</blockquote>
+
+<h2><span id='grails_taglib_example'>1.2</span> Grails Taglib Example</h2>
+
+<p>Create your Grails application</p>
+
+<p>Assuming you have a domain class as follows:</p>
+
+<pre><code>class MyUser{
+    String username
+    String password
+
+    static constraints = {
+        username(unique: true, blank: false)
+        password(blank: false)
+    }
+}
+</code></pre>
+
+<p>Create a controller <em>MyUserController.groovy</em></p>
+
+<pre><code>def login = {
+    def myUserInstance = new MyUser()
+    render(view: "login", model: [myUserInstance: myUserInstance])
+}
+
+def doLogin = {
+    def myUserInstance = new MyUser(params)
+
+    boolean ok = myUserInstance.validate(['password']) 
+    if (ok) {
+        if (!myUserInstance.username || !myUserInstance.password || !myUserInstance.password.equals("pass")) {
+            flash.message = "${message(code: 'Invalid password or username', args: [])}"
+            ok = false
+        }
+    }
+
+    if (ok) {
+        redirect(action: "index")
+    } else {
+        myUserInstance.password = null
+        render(view: "login", model: [myUserInstance: myUserInstance])
+    }
+}
+</code></pre>
+
+<p>Create your <em>grails-app/views/myUser/login.ftl</em></p>
+
+<pre><code>&lt;#ftl /&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+        &lt;meta name="layout" content="main" /&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div class="body"&gt;
+            &lt;#if flash.message?exists&gt;&lt;div class="message"&gt;${flash.message}&lt;/div&gt;&lt;/#if&gt;
+            &lt;@g.hasErrors bean=myUserInstance&gt;
+                &lt;div class="errors"&gt;
+                    &lt;@g.renderErrors bean=myUserInstance _as="list" /&gt;
+                &lt;/div&gt;
+            &lt;/@g.hasErrors&gt; 
+            &lt;@g.form action="doLogin" method="post"&gt;
+                &lt;div class="dialog"&gt;
+                    &lt;table&gt;
+                        &lt;tr class="prop"&gt;
+                            &lt;td valign="top" class="name"&gt;
+                                &lt;label for="username"&gt;&lt;@g.message code="myUser.username.label" default="Username" /&gt;&lt;/label&gt;
+                            &lt;/td&gt;
+                            &lt;td valign="top" class="value ${g.hasErrors({'bean': myUserInstance, 'field': 'username'}, 'errors')}"&gt;
+                                &lt;@g.textField name="username" value=myUserInstance.username /&gt;
+                            &lt;/td&gt;
+                        &lt;/tr&gt;     
+                        &lt;tr class="prop"&gt;
+                            &lt;td valign="top" class="name"&gt;
+                                &lt;label for="password"&gt;&lt;@g.message code="myUser.password.label" default="Password" /&gt;&lt;/label&gt;
+                            &lt;/td&gt;
+                            &lt;td valign="top" class="value ${g.hasErrors({'bean': myUserInstance, 'field': 'password'}, 'errors')}"&gt;
+                                &lt;@g.passwordField name="password" value=myUserInstance.password /&gt;
+                            &lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+                &lt;div class="buttons"&gt;
+                    &lt;span class="button"&gt;&lt;@g.submitButton name="submit" value="${g.message({'code': 'default.button.login.label', 'default': 'Login'})}" /&gt;&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/@g.form&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Use your browser to navigate to <a href="">http://localhost:8080/test-freemaker-prj/myUser/login</a></p>
+
+<p>Done!</p>
+
+<blockquote>
+  <p>Note:
+  In FreeMarker templates, you can use &lt; > or [ ]. For more information, please consult <a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_alternative_syntax">Freemarker FAQ</a> about alternative syntax.</p>
+  
+  <p>Warning:
+  Be aware that FreeMarker syntax differs from GSP syntax (they are different beasts).</p>
+</blockquote>
+
+    </div>
+  
+    <div class="chapter">
+      <h1><span id='usage'>2</span> Usage</h1>
+
+<p>The plugin will try to expose all the TagLib artefacts, registered at grailsApplication.tagLibsClasses, as
+user-defined directives and functions (for implementation details, please refer to
+<a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_implement_function_or_macro_in_java">FreeMarker FAQ</a> ).
+These directives and functions will be defined at runtime and exposed as shared variables, using the same namespace
+of the source taglibs, in any FreeMarker template created further.</p>
+
+<blockquote>
+  <p>Warning:
+  Be aware that some templates can mistakenly/inadvertently "shadow" shared variables definitions.</p>
+</blockquote>
+
+<h2><span id='syntax_tips_gsp_vs_ftl'>2.1</span> Syntax tips (GSP vs. FTL)</h2>
+
+<p>The following items contain useful information about some of the differences between Grails Server Pages (.gsp) and
+FreeMarker Templates (.ftl). Please note this is not intended to be a complete list, it's just a starting point for
+begginers.</p>
+
+<h3><span id='maps_vs_hashes'>2.1.1</span> Maps vs. Hashes</h3>
+
+<p>.gsp <br />
+    [key1: 'abc', key2: 2]</p>
+
+<p>.ftl  -- <em>note that you must enclose the keys names with quotes.</em> <br />
+    {'key1': 'abc', 'key2': 2}</p>
+
+<h3><span id='tags_vs_tags'>2.1.2</span> Tags vs. Tags</h3>
+
+<p>.gsp <br />
+    &lt;g:includeJs script="myscript" /></p>
+
+<p>.ftl <br />
+    &lt;@g.includeJs script="myscript" /></p>
+
+<p>or <br />
+    [@g.includeJs script="myscript" /]</p>
+
+<p>Parameter values are (arbitrary complex) expressions that are not quoted. So assuming you want to pass an integer to
+foo, &lt;\@foo bar=1 /> is good, but &lt;\@foo bar="1" /> is wrong as it passes in the value as a string (because "1" is a
+string literal, just like in Groovy). For the same reason, &lt;\@foo bar=x+1 /> is good, but &lt;\@foo bar="${x+1}" />
+does something else.</p>
+
+<h3><span id='tags_as_method_calls_vs_method_calls'>2.1.3</span> Tags as method calls vs. Method calls</h3>
+
+<p>.gsp <br />
+    &lt;span id="title" class="label ${hasErrors(bean:book,field:'title','errors')}">Title&lt;/span></p>
+
+<p>.ftl -- *note that the arguments are passed in as a hash (map) enclosed in {}, also remember to enclose your key names in
+quotes* <br />
+    &lt;span id="title" class="label ${g.hasErrors({'bean':book,'field':'title'},'errors')}">Title&lt;/span></p>
+
+<blockquote>
+  <p>Note:
+  The plugin will define functions using the same namespace of the corresponding directives.
+  All functions will receive two parameters, at most: a hash and an evaluated string. </p>
+</blockquote>
+
+<h2><span id='render'>2.2</span> Render</h2>
+
+<p>This plugin adds a few new valid arguments to the controller's render method</p>
+
+<p>plugin - allows you to specify a plugin for resolution</p>
+
+<p>example (assume this is called from FooController): <br />
+    render view:'gotView.ftl', plugin:'free-bird'</p>
+
+<p>plugin resolution precedence for 'foo/gotView.ftl'. Will return the first one it finds</p>
+
+<ol>
+<li>if any preTemplateLoaders are set in config then look there for 'foo/gotView.ftl'</li>
+<li>look in the application's view dir for 'foo/gotView.ftl'</li>
+<li>look in the free-bird plugin for foo/gotView.ftl</li>
+<li>if any postTemplateLoaders are specified then call those as well</li>
+</ol>
+
+<p>loaderAttribute - assign an attribute that can be retrieved from the request later on in the Loader <br />
+    render view:'gotView.ftl', plugin:'free-bird', loaderAttribute:'gorm'</p>
+
+<p>If your custom preTemplateLoader is expensive or only for "special" views then you can check for the presence of 'gorm' and only continue if its present.
+This allows better performance, for example, if you are resolving view from a database and only want to try if its specified. otherwise every resolution might attempt the expensive resolution operation. A good examples exists in the test/projects/gorm-loader</p>
+
+<h2><span id='services'>2.3</span> Services</h2>
+
+<p>There are 2 services that you can inject to help render templates. The FreemarkerViewService and FreemarkerTemplateService</p>
+
+<p>FreemarkerViewService</p>
+
+<p>Methods</p>
+
+<p>/ * this is the one you will primarily use * /  </p>
+
+<ul>
+<li>Writer render(String viewName , Map model, Writer writer = new CharArrayWriter(), String pluginName = null)</li>
+<li>Writer render(View view , Map model, Writer writer = new CharArrayWriter() , String pluginName = null)</li>
+<li>View getView(String viewName, String pluginName = null, boolean removePluginNameFromThread = true)</li>
+</ul>
+
+<p>The methods are safe to use in a thread or quartz job. It checks to see that a Request is bound to the thread and if not is goes through the process of binding one so that the taglibs work properly for items like g.message and g.resource</p>
+
+    </div>
+  
+    <div class="chapter">
+      <h1><span id='miscellaneous'>3</span> Miscellaneous</h1>
+
+<h2><span id='configuration'>3.1</span> Configuration</h2>
+
+<p>Here is an example config with explanations</p>
+
+<pre><code>grails {
+    plugin {
+        freemarker {
+
+            /* A list of template loaderinstances or strings - Strings will be used as beanNames. */
+            preTemplateLoaders = ['myCustomPreLoaderService']
+
+            /* a list of any additional paths to search in. this can be any valid resource that spring accepts */
+            templateLoaderPaths = ['some/path/to/views','classpath:com/corp/freemarker']
+
+            /* A list of template loaders or strings - Strings will be used as beanNames. */
+            postTemplateLoaders = ['myCustomPostLoaderService']
+
+            //tries to find templates by appending the local to the name.
+            //an odd feature in freemarker that is true by default
+            localizedLookup = false
+
+            //when referencing a freemarker view name then require the .ftl suffix
+            requireViewSuffix = true
+
+            viewResolver { 
+                /*blow exception in resolver or swallow it and move on */
+                hideException = false //default
+            }
+
+            tags {
+                /* whether to enable the grails taglibs in the templates */
+                enabled = true //default
+            }
+            //extra settings to pass straight through to the Freemarker Configuration
+            //see http://freemarker.sourceforge.net/docs/api/freemarker/template/Configuration.html#setSetting(java.lang.String, java.lang.String)
+            //http://freemarker.sourceforge.net/docs/api/freemarker/core/Configurable.html#setSetting(java.lang.String, java.lang.String)
+
+            configSettings{
+                //for example this will set it to be more secure and allows no user class resolution.
+                new_builtin_class_resolver = 'allows_nothing'
+                //simple is the most secure and means that only recognized objects in model can be accessed 
+                //(String,Date,Number,Boolean,Collection,Map,Iterator,isArray, or TemplateModel)
+                //simple will only allow field access and never method calls. 
+                //Best to pass in a Map of Maps for the hash model for the highest level of security
+                object_wrapper = 'simple'
+            }
+
+        }
+    }
+}
+</code></pre>
+
+<h2><span id='logging'>3.2</span> Logging</h2>
+
+<p>You can enable plugin activity logging using the namespace 'grails.plugin.freemarker'.</p>
+
+<p>For more information about Grails logging, please consult:
+<a href="http://grails.org/doc/latest/guide/3.%20Configuration.html#3.1.2%20Logging">Grails Logging</a></p>
+
+<h2><span id='reserved_words'>3.3</span> Reserved Words</h2>
+
+<p>FreeMarker reserved words present in Grails Core TagLibs that can cause errors to FreeMarker's parser, will be
+preceded by '_' (underscore).</p>
+
+<p>.gsp  </p>
+
+<pre><code>&amp;lt;g:renderErrors bean="${myUserInstance}" as="list" /&gt;
+</code></pre>
+
+<p>.ftl  </p>
+
+<pre><code>&amp;lt;@g.renderErrors bean=myUserInstance _as="list" /&gt;
+</code></pre>
+
+<p>or  </p>
+
+<pre><code>[@g.renderErrors bean=myUserInstance _as="list" /]
+</code></pre>
+
+    </div>
+  
+    <div class="chapter">
+      <h1><span id='history'>4</span> History</h1>
+
+<ul>
+<li>1.0.0 <br />
+<ul><li>merges freemarker tags and freemarker <br /></li>
+<li>allow plugins to be specified for searching <br /></li></ul></li>
+<li>0.7.2 <br />
+<ul><li>Deprecated classes removed <br /></li>
+<li>Preparing the plugin to be compatible with FreeMarker plugin 0.4 <br /></li>
+<li>Packages renamed to meet the standard <br /></li></ul></li>
+<li>0.7.1 <br />
+<ul><li>Preparing the plugin to be compatible with Grails 2.0.0 <br /></li></ul></li>
+<li>0.7.0 <br />
+<ul><li>Major redesign to improve the performance (breaking changes) <br /></li>
+<li>Directives and functions will always be exposed as shared variables <br /></li>
+<li>GroovyPageOutputStack is no longer used <br /></li>
+<li>autoImport, defineLegacyFunctions and asSharedVariables options are no longer supported <br /></li>
+<li>Tags that are independent of specific Servlet objects or scopes can now be used without a thread-bound request <br /></li>
+<li>Classes deprecated <br /></li></ul></li>
+<li>0.5.8 <br />
+<ul><li>Fixed GroovyPageOutputStack usage <br /></li>
+<li>Functions names are no longer prefixed by "_" <br /></li>
+<li>Added EXPERIMENTAL support to expose functions and directives as shared variables <br /></li></ul></li>
+<li>0.5.9 <br />
+<ul><li>Required version of Grails was reduced from 1.3.3 to 1.2.5 <br /></li>
+<li>Exceptions thrown during the execution of FreeMarkerViewResolver.loadView() are no longer hidden <br /></li></ul></li>
+<li>0.6.0 <br />
+<ul><li>Added specialized subclass of FreeMarkerConfigurer, increasing the range of use cases for the plugin <br /></li></ul></li>
+<li>0.6.1 <br />
+<ul><li>Modified atts subclass (LinkedHashMap changed to GroovyPageAttributes) <br /></li>
+<li>Fixed calls to closures with an additional parameter (body) <br /></li></ul></li>
+</ul>
+
+    </div>
+  
+  </div>
+  <p style="text-align: center">
+    The Book of <a href="http://www.gebish.org">Geb</a> - unspecified - February, 2012<br />
+    Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
+  </p>
+</body>
+</html>

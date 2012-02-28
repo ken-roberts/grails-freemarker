@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="css/stylesheet.css" rel="stylesheet" type="text/css">
+  <title>The Book Of Geb - Usage - version unspecified</title>
+
+  <link type="text/css" rel="stylesheet" href="css/shCore.css"></link>
+  <link type="text/css" rel="stylesheet" href="css/shThemeEclipse.css"></link>
+  <script language="javascript" src="js/shCore.js"></script>
+  <script language="javascript" src="js/shBrushGroovy.js"></script>
+  <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+  <script type="text/javascript" src="js/syntaxhighlight.js"></script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-15031038-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="header">
+      <span class="left">&#x25C0; <a href="010.introduction.html">Introduction</a></span>
+      <span class="center"><a href="index.html">Table of Contents</a></span>
+      <span class="right"><a href="030.miscellaneous.html">Miscellaneous</a> &#x25B6;</span>
+    </div>
+    <hr />
+    <div class="page_toc">
+      <h3>Chapter Contents</h3>
+      <ul><li><span class='toc_number'>2</span><a href='020.usage.html#usage'>Usage</a><ul><li><span class='toc_number'>2.1</span><a href='020.usage.html#syntax_tips_gsp_vs_ftl'>Syntax tips (GSP vs. FTL)</a><ul><li><span class='toc_number'>2.1.1</span><a href='020.usage.html#maps_vs_hashes'>Maps vs. Hashes</a></li><li><span class='toc_number'>2.1.2</span><a href='020.usage.html#tags_vs_tags'>Tags vs. Tags</a></li><li><span class='toc_number'>2.1.3</span><a href='020.usage.html#tags_as_method_calls_vs_method_calls'>Tags as method calls vs. Method calls</a></li></ul><span class='toc_number'>2.2</span><a href='020.usage.html#render'>Render</a></li><li><span class='toc_number'>2.3</span><a href='020.usage.html#services'>Services</a></li></ul></li></ul></li></ul>
+    </div>
+    <hr />
+    <h1><span id='usage'>2</span> Usage</h1>
+
+<p>The plugin will try to expose all the TagLib artefacts, registered at grailsApplication.tagLibsClasses, as
+user-defined directives and functions (for implementation details, please refer to
+<a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_implement_function_or_macro_in_java">FreeMarker FAQ</a> ).
+These directives and functions will be defined at runtime and exposed as shared variables, using the same namespace
+of the source taglibs, in any FreeMarker template created further.</p>
+
+<blockquote>
+  <p>Warning:
+  Be aware that some templates can mistakenly/inadvertently "shadow" shared variables definitions.</p>
+</blockquote>
+
+<h2><span id='syntax_tips_gsp_vs_ftl'>2.1</span> Syntax tips (GSP vs. FTL)</h2>
+
+<p>The following items contain useful information about some of the differences between Grails Server Pages (.gsp) and
+FreeMarker Templates (.ftl). Please note this is not intended to be a complete list, it's just a starting point for
+begginers.</p>
+
+<h3><span id='maps_vs_hashes'>2.1.1</span> Maps vs. Hashes</h3>
+
+<p>.gsp <br />
+    [key1: 'abc', key2: 2]</p>
+
+<p>.ftl  -- <em>note that you must enclose the keys names with quotes.</em> <br />
+    {'key1': 'abc', 'key2': 2}</p>
+
+<h3><span id='tags_vs_tags'>2.1.2</span> Tags vs. Tags</h3>
+
+<p>.gsp <br />
+    &lt;g:includeJs script="myscript" /></p>
+
+<p>.ftl <br />
+    &lt;@g.includeJs script="myscript" /></p>
+
+<p>or <br />
+    [@g.includeJs script="myscript" /]</p>
+
+<p>Parameter values are (arbitrary complex) expressions that are not quoted. So assuming you want to pass an integer to
+foo, &lt;\@foo bar=1 /> is good, but &lt;\@foo bar="1" /> is wrong as it passes in the value as a string (because "1" is a
+string literal, just like in Groovy). For the same reason, &lt;\@foo bar=x+1 /> is good, but &lt;\@foo bar="${x+1}" />
+does something else.</p>
+
+<h3><span id='tags_as_method_calls_vs_method_calls'>2.1.3</span> Tags as method calls vs. Method calls</h3>
+
+<p>.gsp <br />
+    &lt;span id="title" class="label ${hasErrors(bean:book,field:'title','errors')}">Title&lt;/span></p>
+
+<p>.ftl -- *note that the arguments are passed in as a hash (map) enclosed in {}, also remember to enclose your key names in
+quotes* <br />
+    &lt;span id="title" class="label ${g.hasErrors({'bean':book,'field':'title'},'errors')}">Title&lt;/span></p>
+
+<blockquote>
+  <p>Note:
+  The plugin will define functions using the same namespace of the corresponding directives.
+  All functions will receive two parameters, at most: a hash and an evaluated string. </p>
+</blockquote>
+
+<h2><span id='render'>2.2</span> Render</h2>
+
+<p>This plugin adds a few new valid arguments to the controller's render method</p>
+
+<p>plugin - allows you to specify a plugin for resolution</p>
+
+<p>example (assume this is called from FooController): <br />
+    render view:'gotView.ftl', plugin:'free-bird'</p>
+
+<p>plugin resolution precedence for 'foo/gotView.ftl'. Will return the first one it finds</p>
+
+<ol>
+<li>if any preTemplateLoaders are set in config then look there for 'foo/gotView.ftl'</li>
+<li>look in the application's view dir for 'foo/gotView.ftl'</li>
+<li>look in the free-bird plugin for foo/gotView.ftl</li>
+<li>if any postTemplateLoaders are specified then call those as well</li>
+</ol>
+
+<p>loaderAttribute - assign an attribute that can be retrieved from the request later on in the Loader <br />
+    render view:'gotView.ftl', plugin:'free-bird', loaderAttribute:'gorm'</p>
+
+<p>If your custom preTemplateLoader is expensive or only for "special" views then you can check for the presence of 'gorm' and only continue if its present.
+This allows better performance, for example, if you are resolving view from a database and only want to try if its specified. otherwise every resolution might attempt the expensive resolution operation. A good examples exists in the test/projects/gorm-loader</p>
+
+<h2><span id='services'>2.3</span> Services</h2>
+
+<p>There are 2 services that you can inject to help render templates. The FreemarkerViewService and FreemarkerTemplateService</p>
+
+<p>FreemarkerViewService</p>
+
+<p>Methods</p>
+
+<p>/ * this is the one you will primarily use * /  </p>
+
+<ul>
+<li>Writer render(String viewName , Map model, Writer writer = new CharArrayWriter(), String pluginName = null)</li>
+<li>Writer render(View view , Map model, Writer writer = new CharArrayWriter() , String pluginName = null)</li>
+<li>View getView(String viewName, String pluginName = null, boolean removePluginNameFromThread = true)</li>
+</ul>
+
+<p>The methods are safe to use in a thread or quartz job. It checks to see that a Request is bound to the thread and if not is goes through the process of binding one so that the taglibs work properly for items like g.message and g.resource</p>
+
+    <hr />
+    <div id="footer">
+      <span class="left">&#x25C0; <a href="010.introduction.html">Introduction</a></span>
+      <span class="center"><a href="index.html">Table of Contents</a></span>
+      <span class="right"><a href="030.miscellaneous.html">Miscellaneous</a> &#x25B6;</span>
+    </div>
+  </div>
+  <p style="text-align: center">
+    The Book of <a href="http://www.gebish.org">Geb</a> - unspecified - February, 2012<br />
+    Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
+  </p>
+</body>
+</html>

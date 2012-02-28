@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="css/stylesheet.css" rel="stylesheet" type="text/css">
+  <title>The Book Of Geb - Introduction - version unspecified</title>
+
+  <link type="text/css" rel="stylesheet" href="css/shCore.css"></link>
+  <link type="text/css" rel="stylesheet" href="css/shThemeEclipse.css"></link>
+  <script language="javascript" src="js/shCore.js"></script>
+  <script language="javascript" src="js/shBrushGroovy.js"></script>
+  <script type="text/javascript" src="js/jquery-1.6.1.min.js"></script>
+  <script type="text/javascript" src="js/syntaxhighlight.js"></script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-15031038-2']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="header">
+      
+      <span class="center"><a href="index.html">Table of Contents</a></span>
+      <span class="right"><a href="020.usage.html">Usage</a> &#x25B6;</span>
+    </div>
+    <hr />
+    <div class="page_toc">
+      <h3>Chapter Contents</h3>
+      <ul><li><span class='toc_number'>1</span><a href='010.introduction.html#introduction'>Introduction</a><ul><li><span class='toc_number'>1.1</span><a href='010.introduction.html#quick_simple_example'>Quick Simple Example</a></li><li><span class='toc_number'>1.2</span><a href='010.introduction.html#grails_taglib_example'>Grails Taglib Example</a></li></ul></li></ul></li></ul>
+    </div>
+    <hr />
+    <h1><span id='introduction'>1</span> Introduction</h1>
+
+<p>With this plugin you can use the
+<a href="http://grails.org/doc/latest/guide/single.html#6.3%20Tag%20Libraries">Grails Tag Libraries</a> in
+<a href="http://freemarker.sourceforge.net/">FreeMarker</a> templates. No JSP tag libraries are involved at
+all, the plugin connects FreeMarker to Grails TagLibs system as directly as possible.</p>
+
+<h2><span id='quick_simple_example'>1.1</span> Quick Simple Example</h2>
+
+<p>Create your Grails application</p>
+
+<p>Install the plugin</p>
+
+<pre><code>grails install-plugin freemarker
+</code></pre>
+
+<p>Assuming you have a controller called FreemakerCon</p>
+
+<p>Add new actions to your <em>grails-app/controllers/test/freemaker/prj/MyUserController.groovy</em></p>
+
+<pre><code>class DemoController {
+    def index = {
+        render view: 'index.ftl', model: [name: 'Jeff Beck', instrument: 'Guitar']
+    }
+}
+</code></pre>
+
+<p>Then you could define a FreeMarker template in grails-app/views/demo/index.ftl that looks like this:</p>
+
+<pre><code>&lt;#ftl /&gt;
+&lt;html&gt;
+&lt;body&gt;
+    Name: ${name} &lt;br/&gt;
+    Instrument: ${instrument}&lt;br/&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Use your browser to navigate to <a href="">http://localhost:8080/test-freemaker-prj/myUser/login</a></p>
+
+<p>Done!</p>
+
+<blockquote>
+  <p>Note:
+  In FreeMarker templates, you can use &lt; > or [ ]. For more information, please consult <a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_alternative_syntax">Freemarker FAQ</a> about alternative syntax.</p>
+  
+  <p>Warning:
+  Be aware that FreeMarker syntax differs from GSP syntax (they are different beasts).</p>
+</blockquote>
+
+<h2><span id='grails_taglib_example'>1.2</span> Grails Taglib Example</h2>
+
+<p>Create your Grails application</p>
+
+<p>Assuming you have a domain class as follows:</p>
+
+<pre><code>class MyUser{
+    String username
+    String password
+
+    static constraints = {
+        username(unique: true, blank: false)
+        password(blank: false)
+    }
+}
+</code></pre>
+
+<p>Create a controller <em>MyUserController.groovy</em></p>
+
+<pre><code>def login = {
+    def myUserInstance = new MyUser()
+    render(view: "login", model: [myUserInstance: myUserInstance])
+}
+
+def doLogin = {
+    def myUserInstance = new MyUser(params)
+
+    boolean ok = myUserInstance.validate(['password']) 
+    if (ok) {
+        if (!myUserInstance.username || !myUserInstance.password || !myUserInstance.password.equals("pass")) {
+            flash.message = "${message(code: 'Invalid password or username', args: [])}"
+            ok = false
+        }
+    }
+
+    if (ok) {
+        redirect(action: "index")
+    } else {
+        myUserInstance.password = null
+        render(view: "login", model: [myUserInstance: myUserInstance])
+    }
+}
+</code></pre>
+
+<p>Create your <em>grails-app/views/myUser/login.ftl</em></p>
+
+<pre><code>&lt;#ftl /&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+        &lt;meta name="layout" content="main" /&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div class="body"&gt;
+            &lt;#if flash.message?exists&gt;&lt;div class="message"&gt;${flash.message}&lt;/div&gt;&lt;/#if&gt;
+            &lt;@g.hasErrors bean=myUserInstance&gt;
+                &lt;div class="errors"&gt;
+                    &lt;@g.renderErrors bean=myUserInstance _as="list" /&gt;
+                &lt;/div&gt;
+            &lt;/@g.hasErrors&gt; 
+            &lt;@g.form action="doLogin" method="post"&gt;
+                &lt;div class="dialog"&gt;
+                    &lt;table&gt;
+                        &lt;tr class="prop"&gt;
+                            &lt;td valign="top" class="name"&gt;
+                                &lt;label for="username"&gt;&lt;@g.message code="myUser.username.label" default="Username" /&gt;&lt;/label&gt;
+                            &lt;/td&gt;
+                            &lt;td valign="top" class="value ${g.hasErrors({'bean': myUserInstance, 'field': 'username'}, 'errors')}"&gt;
+                                &lt;@g.textField name="username" value=myUserInstance.username /&gt;
+                            &lt;/td&gt;
+                        &lt;/tr&gt;     
+                        &lt;tr class="prop"&gt;
+                            &lt;td valign="top" class="name"&gt;
+                                &lt;label for="password"&gt;&lt;@g.message code="myUser.password.label" default="Password" /&gt;&lt;/label&gt;
+                            &lt;/td&gt;
+                            &lt;td valign="top" class="value ${g.hasErrors({'bean': myUserInstance, 'field': 'password'}, 'errors')}"&gt;
+                                &lt;@g.passwordField name="password" value=myUserInstance.password /&gt;
+                            &lt;/td&gt;
+                        &lt;/tr&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+                &lt;div class="buttons"&gt;
+                    &lt;span class="button"&gt;&lt;@g.submitButton name="submit" value="${g.message({'code': 'default.button.login.label', 'default': 'Login'})}" /&gt;&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/@g.form&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>Use your browser to navigate to <a href="">http://localhost:8080/test-freemaker-prj/myUser/login</a></p>
+
+<p>Done!</p>
+
+<blockquote>
+  <p>Note:
+  In FreeMarker templates, you can use &lt; > or [ ]. For more information, please consult <a href="http://freemarker.sourceforge.net/docs/app_faq.html#faq_alternative_syntax">Freemarker FAQ</a> about alternative syntax.</p>
+  
+  <p>Warning:
+  Be aware that FreeMarker syntax differs from GSP syntax (they are different beasts).</p>
+</blockquote>
+
+    <hr />
+    <div id="footer">
+      
+      <span class="center"><a href="index.html">Table of Contents</a></span>
+      <span class="right"><a href="020.usage.html">Usage</a> &#x25B6;</span>
+    </div>
+  </div>
+  <p style="text-align: center">
+    The Book of <a href="http://www.gebish.org">Geb</a> - unspecified - February, 2012<br />
+    Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>
+  </p>
+</body>
+</html>
